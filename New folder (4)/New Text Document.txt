@@ -1,0 +1,72 @@
+drop table Users
+
+create table Users(
+UserId int identity(1,1) primary key not null,
+firstname varchar(50),
+lastname varchar(50),
+age int,
+username varchar(50),
+email varchar(50),
+password varchar(50))
+
+
+drop table Questions
+create table Questions(
+QuestionID int identity(1,1) primary key not null,
+questionTitle varchar(300),
+questionBody varchar(1000),
+voteCount int,
+postdate datetime,
+UserID int FOREIGN KEY REFERENCES Users(UserID))
+
+--drop table Answers
+CREATE TABLE Answers(
+AnswerID int identity(1,1) primary key not null,
+answerBody varchar(1000),
+ansvoteCount int,
+postDate datetime,
+QuestionID INT FOREIGN KEY REFERENCES Questions(QuestionID))
+
+
+drop table tags
+CREATE TABLE tags(
+TagID int identity(1,1) primary key not null,
+TagName varchar(100))
+
+drop table QuestionsTagsMovieReference
+
+CREATE TABLE QuestionsTagsMovieReference(
+refID int identity(1,1) primary key not null,
+QuestionID INT FOREIGN KEY REFERENCES Questions(QuestionID),
+TagID INT FOREIGN KEY REFERENCES tags(TagID))
+
+insert into QuestionsTagsMovieReference values(
+1,1)
+
+select * from QuestionsTagsMovieReference
+select * from tags
+insert into Questions values(
+'SQL','How to open SQL',2,'2008-11-11 13:23:44',1)
+
+insert into Answers values(
+'Are you mad you dont know how to open sql',-3,'2008-12-30 13:23:44',1)
+
+
+insert into Users values(
+'qasim','raza',22,'qasimnerd61','qasim61@gmail.com','qasim123')
+
+
+select * from Answers where QuestionID=1
+
+insert into tags values(
+'Asp.net')
+
+
+
+
+
+
+
+
+
+
