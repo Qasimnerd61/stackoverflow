@@ -1,0 +1,180 @@
+
+--drop table Users
+
+
+
+IF EXISTS(SELECT * FROM INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_NAME='create_tbl_Users')
+	DROP PROCEDURE create_tbl_Users
+	GO
+		CREATE PROCEDURE create_tbl_Users
+		AS
+		IF NOT EXISTS(SELECT *
+						FROM
+						information_schema.tables
+						WHERE TABLE_NAME = 'Users')
+		BEGIN
+create table Users(
+UserId int identity(1,1) primary key not null,
+firstname varchar(50) ,
+lastname varchar(50),
+age int,
+username varchar(50) unique,
+email varchar(50) unique,
+password varchar(50))
+END
+GO
+
+
+--select * from Users
+
+
+---insert into Users values(
+--'qasim','raza',22,'qasimnerd61','qasim61@gmail.com','qasim123')
+
+
+--drop table Questions
+IF EXISTS(SELECT * FROM INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_NAME='create_tbl_Questions')
+	DROP PROCEDURE create_tbl_Questions
+	GO
+		CREATE PROCEDURE create_tbl_Questions
+		AS
+		IF NOT EXISTS(SELECT *
+						FROM
+						information_schema.tables
+						WHERE TABLE_NAME = 'Questions')
+		BEGIN
+create table Questions(
+QuestionID int identity(1,1) primary key not null,
+questionTitle varchar(300),
+questionBody varchar(1000),
+voteCount int,
+postdate datetime,
+UserID int FOREIGN KEY REFERENCES Users(UserID))
+END
+GO
+----------------
+
+
+
+--drop table Answers
+
+IF EXISTS(SELECT * FROM INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_NAME='create_tbl_Answers')
+	DROP PROCEDURE create_tbl_Answers
+	GO
+		CREATE PROCEDURE create_tbl_Answers
+		AS
+		IF NOT EXISTS(SELECT *
+						FROM
+						information_schema.tables
+						WHERE TABLE_NAME = 'Answers')
+		BEGIN
+CREATE TABLE Answers(
+AnswerID int identity(1,1) primary key not null,
+answerBody varchar(1000),
+ansvoteCount int,
+postDate datetime,
+QuestionID INT FOREIGN KEY REFERENCES Questions(QuestionID))
+END
+GO
+----------------------------------------
+
+--drop table tags
+
+IF EXISTS(SELECT * FROM INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_NAME='create_tbl_Tags')
+	DROP PROCEDURE create_tbl_Tags
+	GO
+		CREATE PROCEDURE create_tbl_Tags
+		AS
+		IF NOT EXISTS(SELECT *
+						FROM
+						information_schema.tables
+						WHERE TABLE_NAME = 'tags')
+		BEGIN
+CREATE TABLE tags(
+TagID int identity(1,1) primary key not null,
+TagName varchar(100))
+END
+GO
+
+EXEC create_tbl_Tags
+
+
+
+drop table QuestionsTagsMovieReference
+
+IF EXISTS(SELECT * FROM INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_NAME='create_tbl_QuestionTagsRef')
+	DROP PROCEDURE create_tbl_QuestionTagsRef
+	GO
+		CREATE PROCEDURE create_tbl_QuestionTagsRef
+		AS
+		IF NOT EXISTS(SELECT *
+						FROM
+						information_schema.tables
+						WHERE TABLE_NAME = 'QuestionsTagsMovieReference')
+		BEGIN
+CREATE TABLE QuestionsTagsMovieReference(
+refID int identity(1,1) primary key not null,
+QuestionID INT FOREIGN KEY REFERENCES Questions(QuestionID),
+TagID INT FOREIGN KEY REFERENCES tags(TagID))
+END 
+GO
+
+EXEC create_tbl_QuestionTagsRef
+
+
+select * from Questions
+
+insert into Questions values(
+'What is the difference between "INNER JOIN" and "OUTER JOIN"?','Also, how do LEFT OUTER JOIN, RIGHT OUTER JOIN, and FULL OUTER JOIN fit in?',5100,'2008-11-11 13:23:44',1)
+
+insert into Questions values(
+'How do I UPDATE from a SELECT in SQL Server?','In SQL Server, it is possible to insert rows into a table with an INSERT.. SELECT statement:',4100,'2018-11-11 13:23:44',1)
+
+
+insert into Answers values(
+'Assuming youre joining on columns with no duplicates, which is a very common case:An inner join of A and B gives the result of A intersect B, i.e. the inner part of a Venn diagram intersection.An outer join of A and B gives the results of A union B, i.e. the outer parts of a Venn diagram union.',300,'2008-12-30 13:23:44',1)
+
+insert into QuestionsTagsMovieReference values(
+1,6)
+select * from QuestionsTagsMovieReference
+
+
+select * from tags
+insert into tags values(
+'Inner-Join')
+
+
+IF EXISTS(SELECT * FROM INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_NAME='getAllTagsIDs')
+	DROP PROCEDURE getAllTagsIDs
+	GO
+CREATE PROCEDURE getAllTagsIDs (@questionid INT)
+		AS
+		IF EXISTS(SELECT * FROM information_schema.tables WHERE TABLE_NAME = 'QuestionsTagsMovieReference')
+		SELECT TagID FROM QuestionsTagsMovieReference WHERE QuestionID=@questionid
+		GO
+
+
+
+exec getAllTagsIDs 1
+
+IF EXISTS(SELECT * FROM INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_NAME='getTagName')
+	DROP PROCEDURE getTagName
+	GO
+CREATE PROCEDURE getTagName (@tagid INT)
+		AS
+		IF EXISTS(SELECT * FROM information_schema.tables WHERE TABLE_NAME = 'Tags') 
+		SELECT TagName FROM Tags WHERE TagID=@tagid
+		GO
+
+exec getTagName 6
+
+
+IF EXISTS(SELECT * FROM INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_NAME='getTagID')
+	DROP PROCEDURE getTagID
+	GO
+CREATE PROCEDURE getTagID(@tagname varchar(100))
+	    AS
+		IF EXISTS(SELECT * FROM information_schema.tables WHERE TABLE_NAME = 'Tags') 
+		SELECT TagID FROM Tags WHere TagName=@tagname
+		GO
+exec getTagID 'SQL'
