@@ -1,0 +1,335 @@
+
+--drop table Users
+
+
+IF EXISTS(SELECT * FROM INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_NAME='create_tbl_Users')
+	DROP PROCEDURE create_tbl_Users
+	GO
+		CREATE PROCEDURE create_tbl_Users
+		AS
+		IF NOT EXISTS(SELECT *
+						FROM
+						information_schema.tables
+						WHERE TABLE_NAME = 'Users')
+		BEGIN
+create table Users(
+UserId int identity(1,1) primary key not null,
+firstname varchar(50) ,
+lastname varchar(50),
+age int,
+username varchar(50) unique,
+email varchar(50) unique,
+password varchar(50))
+END
+GO
+EXEC create_tbl_Users
+
+--select * from Users
+
+
+
+
+
+--drop table Questions
+IF EXISTS(SELECT * FROM INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_NAME='create_tbl_Questions')
+	DROP PROCEDURE create_tbl_Questions
+	GO
+		CREATE PROCEDURE create_tbl_Questions
+		AS
+		IF NOT EXISTS(SELECT *
+						FROM
+						information_schema.tables
+						WHERE TABLE_NAME = 'Questions')
+		BEGIN
+create table Questions(
+QuestionID int identity(1,1) primary key not null,
+questionTitle varchar(300),
+questionBody varchar(1000),
+voteCount int default 0 not null,
+postdate datetime default GETDATE(),
+UserID int FOREIGN KEY REFERENCES Users(UserID))
+END
+GO
+EXEC create_tbl_Questions
+----------------
+--select * from Answers
+--drop table Answers
+
+IF EXISTS(SELECT * FROM INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_NAME='create_tbl_Answers')
+	DROP PROCEDURE create_tbl_Answers
+	GO
+		CREATE PROCEDURE create_tbl_Answers
+		AS
+		IF NOT EXISTS(SELECT *
+						FROM
+						information_schema.tables
+						WHERE TABLE_NAME = 'Answers')
+		BEGIN
+CREATE TABLE Answers(
+AnswerID int identity(1,1) primary key not null,
+answerBody varchar(1000),
+ansvoteCount int default 0,
+ansStatus bit default 0,
+postDate datetime default GETDATE(),
+UserID int FOREIGN KEY REFERENCES Users(UserID),
+QuestionID INT FOREIGN KEY REFERENCES Questions(QuestionID))
+END
+GO
+EXEC create_tbl_Answers
+----------------------------------------
+
+--drop table tags
+
+IF EXISTS(SELECT * FROM INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_NAME='create_tbl_Tags')
+	DROP PROCEDURE create_tbl_Tags
+	GO
+		CREATE PROCEDURE create_tbl_Tags
+		AS
+		IF NOT EXISTS(SELECT *
+						FROM
+						information_schema.tables
+						WHERE TABLE_NAME = 'tags')
+		BEGIN
+CREATE TABLE tags(
+TagID int identity(1,1) primary key not null,
+TagName varchar(100))
+END
+GO
+
+EXEC create_tbl_Tags
+
+
+--drop table QuestionsTagsMovieReference
+
+IF EXISTS(SELECT * FROM INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_NAME='create_tbl_QuestionTagsRef')
+	DROP PROCEDURE create_tbl_QuestionTagsRef
+	GO
+		CREATE PROCEDURE create_tbl_QuestionTagsRef
+		AS
+		IF NOT EXISTS(SELECT *
+						FROM
+						information_schema.tables
+						WHERE TABLE_NAME = 'QuestionsTagsMovieReference')
+		BEGIN
+CREATE TABLE QuestionsTagsMovieReference(
+refID int identity(1,1) primary key not null,
+QuestionID INT FOREIGN KEY REFERENCES Questions(QuestionID),
+TagID INT FOREIGN KEY REFERENCES tags(TagID))
+END 
+GO
+EXEC create_tbl_QuestionTagsRef
+
+------------------------------------------------------------------
+IF EXISTS(SELECT * FROM INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_NAME='getAllTagsIDs')
+	DROP PROCEDURE getAllTagsIDs
+	GO
+CREATE PROCEDURE getAllTagsIDs (@questionid INT)
+		AS
+		IF EXISTS(SELECT * FROM information_schema.tables WHERE TABLE_NAME = 'QuestionsTagsMovieReference')
+		SELECT TagID FROM QuestionsTagsMovieReference WHERE QuestionID=@questionid
+		GO
+--exec getAllTagsIDs 4
+-----------------------------------------------------------------------------------------
+IF EXISTS(SELECT * FROM INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_NAME='getTagName')
+	DROP PROCEDURE getTagName
+	GO
+CREATE PROCEDURE getTagName (@tagid INT)
+		AS
+		IF EXISTS(SELECT * FROM information_schema.tables WHERE TABLE_NAME = 'Tags') 
+		SELECT TagName FROM Tags WHERE TagID=@tagid
+		GO
+-----------------
+--exec getTagName 6
+
+IF EXISTS(SELECT * FROM INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_NAME='getTagID')
+	DROP PROCEDURE getTagID
+	GO
+CREATE PROCEDURE getTagID(@tagname varchar(100))
+	    AS
+		IF EXISTS(SELECT * FROM information_schema.tables WHERE TABLE_NAME = 'Tags') 
+		SELECT TagID FROM Tags WHere TagName=@tagname
+		GO
+--exec getTagID 'SQL'
+
+
+IF EXISTS(SELECT * FROM INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_NAME='getAllQuestions')
+	DROP PROCEDURE getAllQuestions
+	GO
+		CREATE PROCEDURE getAllQuestions
+		AS
+		IF EXISTS(SELECT * FROM information_schema.tables WHERE TABLE_NAME = 'Questions') 
+		SELECT * FROM Questions
+		GO
+--EXEC getAllQuestions
+-----------------------------------------------------------------------------------------
+IF EXISTS(SELECT * FROM INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_NAME='answersWRTqustion')
+	DROP PROCEDURE answersWRTqustion
+	GO
+CREATE PROCEDURE answersWRTqustion(@questionid INT)
+	AS
+	IF EXISTS(SELECT * FROM information_schema.tables WHERE TABLE_NAME = 'Answers') 
+	SELECT * FROM Answers WHERE QuestionID=@questionid
+	GO
+------------------------------------------------------------------------------
+--EXEC answersWRTqustion 1
+
+-------------------------------------------------------------------------------
+IF EXISTS(SELECT * FROM INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_NAME='loginUser')
+	DROP PROCEDURE loginUser
+	GO
+		CREATE PROCEDURE loginUser (
+									@email VARCHAR(50),
+									@password VARCHAR(50))
+		AS
+		IF EXISTS(SELECT * FROM information_schema.tables WHERE TABLE_NAME = 'Users') 
+		SELECT COUNT(1) FROM Users WHERE Email=@email AND [Password]=@password
+		GO
+--Exec loginUser 'qasim61@gmail.com','qasim123'
+----------------------------------------------------------------------------
+IF EXISTS(SELECT * FROM INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_NAME='checkEmailExistance')
+	DROP PROCEDURE checkEmailExistance
+	GO
+		CREATE PROCEDURE checkEmailExistance (@email VARCHAR(50))
+		AS
+		IF EXISTS(SELECT * FROM information_schema.tables WHERE TABLE_NAME = 'Users') 
+		SELECT COUNT(1) FROM Users WHERE email=@email
+		GO
+--Exec checkEmailExistance 'faiz21@gmail.com'
+---------------------------------------------------------------
+IF EXISTS(SELECT * FROM INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_NAME='checkUsernameExistance')
+	DROP PROCEDURE checkUsernameExistance
+	GO
+		CREATE PROCEDURE checkUsernameExistance (@username VARCHAR(50))
+		AS
+		IF EXISTS(SELECT * FROM information_schema.tables WHERE TABLE_NAME = 'Users') 
+		SELECT COUNT(1) FROM Users WHERE username=@username
+		GO
+--exec checkUsernameExistance 'shazil61'
+-------------------------------------------------------------------------------
+IF EXISTS(SELECT * FROM INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_NAME='checkQuestionExistance')
+	DROP PROCEDURE checkQuestionExistance
+	GO
+		CREATE PROCEDURE checkQuestionExistance (@questionTitle VARCHAR(300))
+		AS
+		IF EXISTS(SELECT * FROM information_schema.tables WHERE TABLE_NAME = 'Questions') 
+		SELECT COUNT(1) FROM Questions WHERE [questionTitle]=@questionTitle
+		GO
+--Exec checkQuestionExistance 'What is the difference between "INNER JOIN" and "OUTER JOIN"?'
+-------------------------------------------------------------------------------
+IF EXISTS(SELECT * FROM INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_NAME='AddQuestion')
+	DROP PROCEDURE AddQuestion
+	GO
+		CREATE PROCEDURE AddQuestion (@questiontitle VARCHAR(300),
+									@questionBody VARCHAR(1000),
+									@userid int)								
+		AS
+		IF EXISTS(SELECT * FROM information_schema.tables WHERE TABLE_NAME = 'Questions') 
+		IF NOT EXISTS(SELECT * FROM Questions WHERE [questionTitle]=@questiontitle )
+		INSERT INTO Questions(questionTitle,questionBody,UserID) VALUES (@questiontitle, @questionBody,@userid)
+		GO
+
+--exec AddQuestion 'Is there a polyfill for getIntersectionList, getEnclosureList, checkIntersection, checkEnclosure for Firefox SVG?','Since Firefox does not support getIntersectionList, getEnclosureList, checkIntersection, checkEnclosure methods, is there a polyfill? Or how to write a polyfill for the 4 methods in JavaScript?'
+
+------------------------------------------
+IF EXISTS(SELECT * FROM INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_NAME='getQuestionID')
+	DROP PROCEDURE getQuestionID
+	GO
+		CREATE PROCEDURE getQuestionID (@questiontitle VARCHAR(300))
+		AS
+		IF EXISTS(SELECT * FROM information_schema.tables WHERE TABLE_NAME = 'Questions') 
+		SELECT QuestionID FROM Questions WHERE [questionTitle]=@questiontitle
+		GO
+--EXEC getQuestionID 'Solve HTTP2 Download Failed Network Error'
+------------------------------------------------------------
+IF EXISTS(SELECT * FROM INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_NAME='SaveQuestionTags')
+	DROP PROCEDURE SaveQuestionTags
+	GO
+		CREATE PROCEDURE SaveQuestionTags (	@questionid INT,
+											@tagid INT)
+		AS
+		IF EXISTS(SELECT * FROM information_schema.tables WHERE TABLE_NAME = 'QuestionsTagsMovieReference')
+		IF NOT EXISTS(SELECT * FROM QuestionsTagsMovieReference WHERE QuestionID=@questionid AND tagID=@tagid)
+		INSERT INTO QuestionsTagsMovieReference VALUES (@questionid, @tagid)
+		GO
+
+--exec SaveQuestionTags 4,7
+
+IF EXISTS(SELECT * FROM INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_NAME='sp_AddUsers')
+	DROP PROCEDURE sp_AddUsers
+	GO
+		CREATE PROCEDURE sp_AddUsers (	@firstname VARCHAR(50),
+									@lastname VARCHAR(50),
+									@age INT,
+									@username VARCHAR(50),
+									@email VARCHAR(50),
+									@password VARCHAR(50))
+									
+		AS
+		IF EXISTS(SELECT * FROM information_schema.tables WHERE TABLE_NAME = 'Users') 
+		IF NOT EXISTS(SELECT * FROM Users WHERE email=@email OR username=@username)
+		INSERT INTO Users VALUES (@firstname, @lastname, @age, @username,@email, @password)
+		GO
+
+--Exec sp_AddUsers 'Faiz','Ahmed',25,'faizbacha','faiz21@gmail.com','faiz123'
+
+
+IF EXISTS(SELECT * FROM INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_NAME='getUserID')
+	DROP PROCEDURE getUserID
+	GO
+		CREATE PROCEDURE getUserID (@email VARCHAR(50))
+		AS
+		IF EXISTS(SELECT * FROM information_schema.tables WHERE TABLE_NAME = 'Users') 
+		SELECT UserId FROM Users WHERE [email]=@email
+		GO
+
+--Exec getUserID 'samad@gmail.com'
+
+
+
+IF EXISTS(SELECT * FROM INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_NAME='getQuestonWRTqID')
+	DROP PROCEDURE getQuestonWRTqID
+	GO
+CREATE PROCEDURE getQuestonWRTqID(@questionid int)
+AS
+IF EXISTS(SELECT * FROM information_schema.tables WHERE TABLE_NAME = 'Questions') 
+SELECT * from Questions where [QuestionID]=@questionid
+GO
+---EXEC getQuestonWRTqID 2
+------------------------------------
+IF EXISTS(SELECT * FROM INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_NAME='AddAnswer')
+	DROP PROCEDURE AddAnswer
+	GO
+		CREATE PROCEDURE AddAnswer (@answerbody VARCHAR(1000), @userid int,
+									@questionid int)								
+		AS
+		IF EXISTS(SELECT * FROM information_schema.tables WHERE TABLE_NAME = 'Answers') 
+		IF NOT EXISTS(SELECT * FROM Answers WHERE [answerBody]=@answerbody)
+		INSERT INTO Answers(answerBody,UserID,QuestionID) VALUES (@answerbody, @userid,@questionid)
+		GO
+
+Exec AddAnswer 'When the Group creator user adds users to a group, if a user does not already exists you could, from the front-end, call a Callable Cloud Function (CF) that creates a temporary Firestore document in a specific collection. The ID of this document will be the (future) userId.',3,1
+select * from Answers
+
+IF EXISTS(SELECT * FROM INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_NAME='getSearchedQuestion')
+	DROP PROCEDURE getSearchedQuestion
+	GO
+		CREATE PROCEDURE getSearchedQuestion (@searchField VARCHAR(50))
+		AS
+		DECLARE @searchQuery VARCHAR(50) = '%'+@searchField+'%'
+		IF EXISTS(SELECT * FROM information_schema.tables WHERE TABLE_NAME = 'Tags') 
+		SELECT * FROM Questions WHERE [questionTitle] LIKE @searchQuery
+		GO
+Exec getSearchedQuestion 'shah'
+
+create procedure GetQuesttionsWRTUserID (@userid int)
+AS
+select * from Questions where UserID=@userid
+exec GetQuesttionsWRTUserID 1
+drop procedure updateQuestion
+create procedure updateQuestion(@questionid int, @questiontitle varchar(300),@questionbody varchar(1000))
+as
+UPDATE Questions
+SET questionTitle=@questiontitle,questionBody=@questionbody
+WHERE QuestionID=@questionid;
+
+exec updateQuestion 7,'what is angular','want to know about angular'
